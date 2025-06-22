@@ -21,16 +21,23 @@ def segment(img, method, K, iters, batch, n_sp,
         segmenter = SLICSeg(n_segments=n_seg,
                             compactness=compactness,
                             max_dim=max_dim)
-        labels, _ = segmenter.segment(img_arr)
-        seg = label2rgb(labels.reshape(H, W), img_arr, kind='avg')
+        labels, shape = segmenter.segment(img_arr)
+        h_new, w_new = shape
+        if (h_new, w_new) != img_arr.shape[:2]:
+            bg = np.array(Image.fromarray(img_arr).resize((w_new, h_new),
+                                                          Image.LANCZOS))
+        else:
+            bg = img_arr
+        seg = label2rgb(labels.reshape(h_new, w_new), bg, kind='avg')
         return Image.fromarray((seg * 255).astype(np.uint8))
 
     if method == 'spkmeans':
         segmenter = SuperpixelKMeans(n_sp=n_sp,
                                      K=K,
                                      compactness=compactness)
-        labels, _ = segmenter.segment(img_arr)
-        seg = label2rgb(labels.reshape(H, W), img_arr, kind='avg')
+        labels, shape = segmenter.segment(img_arr)
+        h_new, w_new = shape
+        seg = label2rgb(labels.reshape(h_new, w_new), img_arr, kind='avg')
         return Image.fromarray((seg * 255).astype(np.uint8))
 
     data, meta = preprocess_image(img, max_dim)

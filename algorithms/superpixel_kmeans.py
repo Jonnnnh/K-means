@@ -3,7 +3,6 @@ from skimage.segmentation import slic
 from .base import Segmenter
 from .minibatch_kmeans import MiniBatchKMeansSeg
 
-
 class SuperpixelKMeans(Segmenter):
     def __init__(self, n_sp=1000, K=4, compactness=10):
         self.n_sp = n_sp
@@ -26,13 +25,10 @@ class SuperpixelKMeans(Segmenter):
             pixels = np.stack([img_arr.flatten()] * 3, axis=1)
 
         unique_ids = np.unique(flat)
-        sp_feats = np.vstack([pixels[flat == sid].mean(axis=0) for sid in unique_ids])
-
-        labels_sp, centers = MiniBatchKMeansSeg(self.K).segment(sp_feats)
-
-        max_id = unique_ids.max()
-        label_map = np.zeros(max_id + 1, dtype=int)
+        sp_feats = np.vstack([pixels[flat == sid].mean(axis=0)
+                              for sid in unique_ids])
+        labels_sp, _ = MiniBatchKMeansSeg(self.K).segment(sp_feats)
+        label_map = np.zeros(unique_ids.max() + 1, dtype=int)
         label_map[unique_ids] = labels_sp
-
         labels_pix = label_map[flat]
-        return labels_pix, centers
+        return labels_pix, (H, W)

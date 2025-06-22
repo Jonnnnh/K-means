@@ -31,4 +31,4 @@ class SLICSeg(Segmenter):
             channel_axis=channel_axis
         )
 
-        return segments.flatten(), None
+        return segments.flatten(), (H, W)
